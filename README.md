@@ -47,7 +47,7 @@ warnings.filterwarnings('ignore')
 ad = pd.read_csv(r'/Users/christospieris/Documents/LSE Data Analytics/Course 2/actual_duration.csv')
 
 # View the DataFrame.
-print(ad.head())
+ad.head()
 
 # Determine whether there are missing values.
 
@@ -62,7 +62,7 @@ print(ad.head())
 ar = pd.read_csv(r'/Users/christospieris/Documents/LSE Data Analytics/Course 2/appointments_regional.csv')
 
 # View the DataFrame.
-print(ar.head())
+ar.head()
 
 # Determine whether there are missing values.
 
@@ -77,7 +77,7 @@ print(ar.head())
 nc = pd.read_excel(r'/Users/christospieris/Documents/LSE Data Analytics/Course 2/national_categories.xlsx')
 
 # View the DataFrame.
-print(nc.appointment_date)
+nc.appointment_date
 
 # Determine whether there are missing values.
 
@@ -483,7 +483,7 @@ tags_DataFrame_G10 = tags_DataFrame[tags_DataFrame.groupby('Hashtags')['count'].
 tags_DataFrame_G10
 
 # Create a Seaborn barplot indicating records with a count >10 records.
-sns.barplot(tags_DataFrame_G10['count'],tags_DataFrame_G10['Hashtags'])
+sns.barplot(tags_DataFrame_G10['count'],tags_DataFrame_G10['Hashtags'],palette="magma")
 plt.show()
 
 # Create the plot.
@@ -496,40 +496,105 @@ plt.show()
 
 # Assignment activity 6
 
-### Investigate the main cencerns posed by the NHS. 
+### Investigate the main concerns posed by the NHS. 
 
 # Prepare your workstation.
 # Load the appointments_regional.csv file.
-
+ar
 
 # View the DataFrame.
 
 
 # Print the min and max dates.
+print("The minimum date found in the Regional Appointments data set is:",ar['appointment_month'].min())
+print("The maximum date found in the Regional Appointments data set is:",ar['appointment_month'].max())
 
 
 # Filter the data set to only look at data from 2021-08 onwards.
-
+ar_after_August_2021 = ar.query('appointment_month>"2021-08"')
+ar_after_August_2021
 
 **Question 1:** Should the NHS start looking at increasing staff levels? 
 
 # Create an aggregated data set to review the different features.
+sns.set_context('paper')
 
-
+ar_agg = pd.DataFrame(data = ar_after_August_2021, columns =['appointment_month','appointment_status',
+                                 'hcp_type','appointment_mode','time_between_book_and_appointment',
+                                 'count_of_appointments'])
 # View the DataFrame.
+ar_agg_grouped_by_appointment_status = ar_agg.groupby('appointment_status')['count_of_appointments'].sum().reset_index()
+ar_agg_grouped_by_appointment_status['%'] = 100 * ar_agg_grouped_by_appointment_status['count_of_appointments'] / ar_agg_grouped_by_appointment_status['count_of_appointments'].sum()
+ar_agg_grouped_by_appointment_status
+
+sns.barplot(ar_agg_grouped_by_appointment_status['appointment_status'],
+            ar_agg_grouped_by_appointment_status['%'],palette="magma")
+plt.title('Appointment Status [%]')
+plt.show()
+
+
+ar_agg_grouped_by_hcp_type = ar_agg.groupby('hcp_type')['count_of_appointments'].sum().reset_index()
+ar_agg_grouped_by_hcp_type['%'] = 100 * ar_agg_grouped_by_appointment_status['count_of_appointments'] / ar_agg_grouped_by_appointment_status['count_of_appointments'].sum()
+ar_agg_grouped_by_hcp_type
+
+sns.barplot(ar_agg_grouped_by_hcp_type['hcp_type'],
+            ar_agg_grouped_by_hcp_type['%'],palette="magma")
+plt.title('HCP Type [%]')
+plt.show()
+
+
+ar_agg_grouped_by_appointment_mode = ar_agg.groupby('appointment_mode')['count_of_appointments'].sum().reset_index()
+ar_agg_grouped_by_appointment_mode['%'] = 100 * ar_agg_grouped_by_appointment_status['count_of_appointments'] / ar_agg_grouped_by_appointment_status['count_of_appointments'].sum()
+ar_agg_grouped_by_appointment_mode
+
+sns.barplot(ar_agg_grouped_by_appointment_mode['appointment_mode'],
+            ar_agg_grouped_by_appointment_mode['%'],palette="magma")
+plt.title('Appointment Mode [%]')
+plt.show()
+
+
+ar_agg_grouped_by_time_between_book_and_appointment = ar_agg.groupby('time_between_book_and_appointment')['count_of_appointments'].sum().reset_index()
+ar_agg_grouped_by_time_between_book_and_appointment['%'] = 100 * ar_agg_grouped_by_appointment_status['count_of_appointments'] / ar_agg_grouped_by_appointment_status['count_of_appointments'].sum()
+ar_agg_grouped_by_time_between_book_and_appointment
+
+sns.barplot(ar_agg_grouped_by_time_between_book_and_appointment['time_between_book_and_appointment'],
+            ar_agg_grouped_by_time_between_book_and_appointment['%'],palette="magma")
+plt.title('Time between Booking and Appointment [%]')
+plt.show()
+
 
 
 # Determine the total number of appointments per month.
-
-
+ar_Per_Month = ar_agg.groupby('appointment_month')['count_of_appointments'].sum().reset_index()
+ar_Per_Month
 # Add a new column to indicate the average utilisation of services.
+NHS_daily_capacity = 1200000
+ar_Per_Month['avg_util (%)']=100*((ar_Per_Month['count_of_appointments']/30)/NHS_daily_capacity).round(1)
+
 # Monthly aggregate / 30 to get to a daily value.
 
 
 # View the DataFrame.
+ar_Per_Month
 
+ar_Per_Month['appointment_month']=ar_Per_Month['appointment_month'].astype('string')
 
 # Plot sum of count of monthly visits.
+graph = sns.relplot(
+    data=ar_Per_Month, 
+    x="appointment_month", y="count_of_appointments",
+    height=5, aspect=2, 
+    kind="line"
+)
+monthly_capacity=NHS_daily_capacity*30
+x_values=ar_Per_Month['appointment_month']
+monthly_capacity
+
+plt.axhline(y=monthly_capacity,linestyle='dashed',color='r')
+
+
+
+
 # Convert the appointment_month to string data type for ease of visualisation.
 
 
@@ -537,46 +602,90 @@ plt.show()
 
 
 # Plot monthly capacity utilisation.
-
-
+sns.relplot(
+    data=ar_Per_Month, 
+    x="appointment_month", y="avg_util (%)",
+    height=5, aspect=2, 
+    kind="line",
+    palette="magma"
+)
+plt.axhline(y=100,linestyle='dashed',color='r')
+plt.ylim(0,100)
 # Create a lineplot.
 
 
 **Question 2:** How do the healthcare professional types differ over time?
 
 # Create a line plot to answer the question.
-
+sns.relplot(
+    data=ar_agg, 
+    x="appointment_month", y="count_of_appointments", hue='hcp_type',
+    height=5, aspect=2, 
+    kind="line",
+    palette="magma"
+)
 
 **Question 3:** Are there significant changes in whether or not visits are attended?
 
 # Create a line plot to answer the question.
-
+sns.relplot(
+    data=ar_agg, 
+    x="appointment_month", y="count_of_appointments", hue='appointment_status',
+    height=5, aspect=2, 
+    kind="line",
+    palette="magma"
+)
 
 **Question 4:** Are there changes in terms of appointment type and the busiest months?
 
 # Create a line plot to answer the question.
-
+sns.relplot(
+    data=ar_agg, 
+    x="appointment_month", y="count_of_appointments", hue='appointment_mode',
+    height=5, aspect=2, 
+    kind="line",
+    palette="magma"
+)
 
 **Question 5:** Are there any trends in time between booking an appointment?
 
 # Create a line plot to answer the question.
-
+sns.relplot(
+    data=ar_agg, 
+    x="appointment_month", y="count_of_appointments", hue='time_between_book_and_appointment',
+    height=5, aspect=2, 
+    kind="line",
+    palette="magma"
+)
 
 **Question 6:** How do the spread of service settings compare?
 
 # Let's go back to the national category DataFrame you created in an earlier assignment activity.
-
+nc.head()
 
 # Create a new DataFrame consisting of the month of appointment and the number of appointments.
-
+nc_grouped_by_month = nc.groupby(['appointment_month','service_setting'])['count_of_appointments'].sum().reset_index()
 # View the DataFrame.
-
+nc_grouped_by_month
 
 # Create a boxplot to investigate spread of service settings.
-
+sns.barplot(data = nc_grouped_by_month,
+            x = 'appointment_month',
+            y = 'count_of_appointments',
+            hue = 'service_setting',          
+            palette="magma")
+plt.title('Spread of service settings')
+plt.show()
 
 # Create a boxplot to investigate the service settings without GP.
-
+data = nc_grouped_by_month.loc[nc_grouped_by_month['service_setting']!='General Practice']
+sns.barplot(data = data,
+            x = 'appointment_month',
+            y = 'count_of_appointments',
+            hue = 'service_setting',          
+            palette="magma")
+plt.title('Spread of service settings')
+plt.show()
 
 # 
 
