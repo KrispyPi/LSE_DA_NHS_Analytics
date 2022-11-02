@@ -4,28 +4,15 @@
 
 ## Assignment: Diagnostic Analysis using Python
 
-You’ll be working with real-world data to address a problem faced by the National Health Service (NHS). The analysis will require you to utilise Python to explore the available data, create visualisations to identify trends, and extract meaningful insights to inform decision-making. 
 
-### A note for students using this template
-This Jupyter Notebook is a template you can use to complete the Course 2 assignment: Diagnostic Analysis using Python. 
 
-Keep in mind: 
-- You are **not required** to use this template to complete the assignment. 
-- If you decide to use this template for your assignment, make a copy of the notebook and save it using the assignment naming convention: **LastName_FirstName_DA201_Assignment_Notebook.ipynb**.
-- The workflow suggested in this template follows the Assignment Activities throughout the course.
-- Refer to the guidance on the Assignment Activity pages for specific details. 
-- The markup and comments in this template identify the key elements you need to complete before submitting the assignment.
-- Make this notebook your own by adding your process notes and rationale using markdown, add links, screenshots, or images to support your analysis, refine or clarify the comments, and change the workflow to suit your process.
-- All elements should be functional and visible in your Notebook. 
-- Be sure to push your notebook to GitHub after completing each Assignment Activity.
 
- > ***Markdown*** Remember to change cell types to `Markdown`. You can review [Markdown basics](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax) to find out how to add formatted text, links, and images to your notebook.
 
 # 
 
 # Assignment activity 1
 
-### Insert proof of your GitHub repository. This can be a link or screenshot showing your repo.
+### GitHub repository
 
 # My GitHub repository link can be found below
 
@@ -33,7 +20,7 @@ https://github.com/KrispyPi/LSE_DA_NHS_Analytics.git
 
 # Assignment activity 2
 
-### Prepare your workstation
+### Prepare the workstation
 
 # Import the necessary libraries.
 import pandas as pd
@@ -49,46 +36,19 @@ ad = pd.read_csv(r'/Users/christospieris/Documents/LSE Data Analytics/Course 2/a
 # View the DataFrame.
 ad.head()
 
-# Determine whether there are missing values.
-
-
-# Determine the metadata of the data set.
-
-
-# Determine the descriptive statistics of the data set.
-
-
 # Import and sense-check the appointments_regional.csv data set as ar.
 ar = pd.read_csv(r'/Users/christospieris/Documents/LSE Data Analytics/Course 2/appointments_regional.csv')
 
 # View the DataFrame.
 ar.head()
 
-# Determine whether there are missing values.
-
-
-# Determine the metadata of the data set.
-
-
-# Determine the descriptive statistics of the data set.
-
-
 # Import and sense-check the national_categories.xlsx data set as nc.
 nc = pd.read_excel(r'/Users/christospieris/Documents/LSE Data Analytics/Course 2/national_categories.xlsx')
 
 # View the DataFrame.
-nc.appointment_date
+nc
 
-# Determine whether there are missing values.
-
-
-# Determine the metadata of the data set.
-
-
-# Determine the descriptive statistics of the data set.
-
-
-### Explore the data set
+### Exploring the data set
 
 **Question 1:** How many locations are there in the data set?
 
@@ -135,8 +95,6 @@ print(ar['appointment_status'].value_counts(normalize=1).mul(100).round(1).astyp
 # 
 
 # Assignment activity 3
-
-### Continue to explore the data and search for answers to more specific questions posed by the NHS.
 
 **Question 1:** Between what dates were appointments scheduled? 
 
@@ -194,18 +152,17 @@ print('The maximum date in the nc DataFrame is:', max(nc.appointment_date))
 
 # For each of these service settings, determine the number of records available for the period and the location. 
 nc_NW = nc.query('sub_icb_location_name.str.contains("NHS North West London", case=False).values')
-#print(nc_NW.sub_icb_location_name)
-
 nc_NW_filtered = nc_NW[(nc_NW['appointment_date']>'2021-01-01') & (nc_NW['appointment_date']<'2022-06-01')]
-#print(nc_NW_filtered)
 
+# Initialise an empty list to append the result of the loop
 sum_entries=[]
+# Run the loop to generate the counter
 for type in nc_NW_filtered['service_setting'].unique():
     counter = nc_NW_filtered[nc_NW_filtered['service_setting']== type]
     print("The number of records for", type, "is", counter ['count_of_appointments'].sum())
     sum_entries.append(counter ['count_of_appointments'].sum())
-
-print(max(sum_entries))
+# Print the max value of the list
+print("The max value is:",max(sum_entries))
 # View the output.
 
 
@@ -434,15 +391,12 @@ tweets.head(5)
 # Explore the data set.
 tweets.info()
 tweets.describe()
-
-
-print("tweet_retweet_count with value_counts()")
 tweets['tweet_retweet_count'].value_counts(ascending=0)
 
 # Would it be useful to only look at retweeted and favourite tweet messages?
 # Explain your answer.
 
-Considering we are interested in tweets that have information of substance to convey one can make the argument that dropping tweets that have not been retweeted would be a safe way forward in reducing the sample size without loosing knowledge.
+Considering we are interested in tweets that have information of substance to convey one can make the argument that dropping tweets that have not been retweeted would be a safe way forward in reducing the sample size without loosing knowledge. The project decided to continue working on the full dataset to provide the breadth of views expressed on the platform when it comes to NHS. 
 
 # Create a new DataFrame containing only the text.
 tweets_text_extracted = tweets.select_dtypes(exclude=['int64','bool'])
@@ -486,12 +440,6 @@ tags_DataFrame_G10
 sns.barplot(tags_DataFrame_G10['count'],tags_DataFrame_G10['Hashtags'],palette="magma")
 plt.show()
 
-# Create the plot.
-
-
-# View the barplot.
-
-
 # 
 
 # Assignment activity 6
@@ -522,17 +470,19 @@ sns.set_context('paper')
 ar_agg = pd.DataFrame(data = ar_after_August_2021, columns =['appointment_month','appointment_status',
                                  'hcp_type','appointment_mode','time_between_book_and_appointment',
                                  'count_of_appointments'])
-# View the DataFrame.
+# Aggregate by appointment status
 ar_agg_grouped_by_appointment_status = ar_agg.groupby('appointment_status')['count_of_appointments'].sum().reset_index()
+# Create a new column to include the % calculation
 ar_agg_grouped_by_appointment_status['%'] = 100 * ar_agg_grouped_by_appointment_status['count_of_appointments'] / ar_agg_grouped_by_appointment_status['count_of_appointments'].sum()
+# View the result
 ar_agg_grouped_by_appointment_status
-
+# Plot the result in a barplot
 sns.barplot(ar_agg_grouped_by_appointment_status['appointment_status'],
             ar_agg_grouped_by_appointment_status['%'],palette="magma")
 plt.title('Appointment Status [%]')
 plt.show()
 
-
+# The rest of this code block follows the same pattern as the one above
 ar_agg_grouped_by_hcp_type = ar_agg.groupby('hcp_type')['count_of_appointments'].sum().reset_index()
 ar_agg_grouped_by_hcp_type['%'] = 100 * ar_agg_grouped_by_appointment_status['count_of_appointments'] / ar_agg_grouped_by_appointment_status['count_of_appointments'].sum()
 ar_agg_grouped_by_hcp_type
@@ -542,7 +492,7 @@ sns.barplot(ar_agg_grouped_by_hcp_type['hcp_type'],
 plt.title('HCP Type [%]')
 plt.show()
 
-
+# The rest of this code block follows the same pattern as the one above
 ar_agg_grouped_by_appointment_mode = ar_agg.groupby('appointment_mode')['count_of_appointments'].sum().reset_index()
 ar_agg_grouped_by_appointment_mode['%'] = 100 * ar_agg_grouped_by_appointment_status['count_of_appointments'] / ar_agg_grouped_by_appointment_status['count_of_appointments'].sum()
 ar_agg_grouped_by_appointment_mode
@@ -552,7 +502,7 @@ sns.barplot(ar_agg_grouped_by_appointment_mode['appointment_mode'],
 plt.title('Appointment Mode [%]')
 plt.show()
 
-
+# The rest of this code block follows the same pattern as the one above
 ar_agg_grouped_by_time_between_book_and_appointment = ar_agg.groupby('time_between_book_and_appointment')['count_of_appointments'].sum().reset_index()
 ar_agg_grouped_by_time_between_book_and_appointment['%'] = 100 * ar_agg_grouped_by_appointment_status['count_of_appointments'] / ar_agg_grouped_by_appointment_status['count_of_appointments'].sum()
 ar_agg_grouped_by_time_between_book_and_appointment
@@ -692,4 +642,21 @@ plt.show()
 ### Provide a summary of your findings and recommendations based on the analysis.
 
 > Double click to insert your summary.
+
+Key findings and recommendations
+
+The NHS networks were well resourced to meet demand for the given period, with utilisation averaging 75%. Focus areas should be to mitigate risks were bottlenecks can occur and by refining the current reporting and data management to benefit from data driven operations especially during the busiest months of October, November.
+
+1	Analysing historical data covering a period where the UK was affected by the pandemic, the project showed that only a fraction of the appointments booked were not attended (<10%). It is reasonable to predict that this number will only get smaller in the time after the investigated time window, considering the social norm will be restored post-pandemic. 
+
+2	The project identified that the biggest set of appointments are served by GP. Considering this is an area of potential congestion and bottle-neck formation, it is part of this project’s recommendation that the NHS investigates for alternative ways to deliver appointments were possible. Investing in upskilling other practice staff and / or improving triage stages could be considered to mitigate this risk.
+
+3	Face-to-face meetings were shown to be the most popular. The project suggests that NHS invests in other means to deliver consultation and at the same in educating people to take up alternative routes such as tele-health appointments. Resource management will benefit from the agility that virtual settings can offer.
+
+4	Most appointments were made a day before they were supposed to take place. While this will be a hard requirement for certain health conditions, the project suggests that the NHS promotes longer periods to allow for efficient resource allocation to settle in a more optimal way, given that with more time both the demand and supply will be able to make arrangements and indeed be successful at the point of contact.
+
+5	The analysis showed that the NHS resource networks were well prepared for the given period. Utilisation never came close to exceeding capacity, indicating that the NHS should focus in optimising the existing resource allocation as well as reducing the missed appointments rather than injecting head count.
+
+6	Investing in robust reporting and data management is also an area that the NHS can benefit from improving. This was identified by revealing trends in the service setting spread, indicating that the unmapped appointments were the second largest service setting, especially during the busiest months. This means that when busy the NHS reporting suffers, when this is when data driven management will help the most in resource allocation and operational management.
+
 
